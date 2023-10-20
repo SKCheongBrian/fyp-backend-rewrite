@@ -93,7 +93,6 @@ public class ScopeTreeSkeletonMakerVisitor extends VoidVisitorAdapter<Scope> {
         BlockStmt blockStmt = optionalBody.get();
         for (Statement stmt : blockStmt.getStatements()) {
             if (stmt.isLocalClassDeclarationStmt()) {
-                // TODO see if this works.
                 ClassOrInterfaceDeclaration type = stmt.asLocalClassDeclarationStmt().getClassDeclaration();
                 ClassScope classScope = new ClassScope(type.getName(), current, type.isStatic());
                 current.addChild(type.getName(), classScope);
