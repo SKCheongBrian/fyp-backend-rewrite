@@ -8,8 +8,8 @@ import com.github.javaparser.ast.expr.SimpleName;
 public class Variable extends ScopeVariable {
     /**
      * The constructor for the Variable.
-     * @param name A SimpleName that corresponds to the
-     * @param isStatic
+     * @param name A SimpleName that corresponds to the name of the Variable.
+     * @param isStatic A boolean that represents if the Variable is static.
      */
     public Variable(SimpleName name, boolean isStatic) {
         super(name, isStatic);

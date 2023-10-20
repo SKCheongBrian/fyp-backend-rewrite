@@ -1,10 +1,5 @@
 package com.cheong.brian.javadiagrambackend.compiler.scope_tree.scopes;
 
-import com.github.javaparser.ast.expr.SimpleName;
-
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * A class that encapsulates the scope tree of a Java program.
  */

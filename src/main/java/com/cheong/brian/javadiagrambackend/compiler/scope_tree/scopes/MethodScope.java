@@ -15,10 +15,10 @@ import java.util.HashMap;
  */
 @Getter
 public class MethodScope extends Scope {
-    private HashMap<SimpleName, Variable> variables;
-    private Type returnType;
-    private NodeList<TypeParameter> typeParameters;
-    private NodeList<Modifier> modifiers;
+    private final HashMap<SimpleName, Variable> variables;
+    private final Type returnType;
+    private final NodeList<TypeParameter> typeParameters;
+    private final NodeList<Modifier> modifiers;
 
     /**
      * The constructor for the MethodScope.

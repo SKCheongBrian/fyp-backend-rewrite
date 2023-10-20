@@ -12,8 +12,8 @@ import java.util.HashMap;
 public abstract class Scope {
     private final HashMap<SimpleName, Scope> children;
     private final boolean isStatic;
-    private SimpleName name;
-    private Scope parent;
+    private final SimpleName name;
+    private final Scope parent;
 
     /**
      * The constructor for the Scope
@@ -26,14 +26,6 @@ public abstract class Scope {
         this.children = new HashMap<>();
         this.parent = parent;
         this.isStatic = isStatic;
-    }
-
-    /**
-     * Set the parent of this scope.
-     * @param parentScope the scope to set as the parent scope.
-     */
-    public void setParent(Scope parentScope) {
-        this.parent = parentScope;
     }
 
     /**

@@ -34,7 +34,7 @@ public class ConstructorSuperAdderVisitor extends ModifierVisitor<Void> {
      */
     private void addSuperInvocation(BlockStmt body) {
         NodeList<Statement> statements = body.getStatements();
-        Statement superInvocation = new ExplicitConstructorInvocationStmt(false, null, new NodeList<Expression>());
+        Statement superInvocation = new ExplicitConstructorInvocationStmt(false, null, new NodeList<>());
         statements.add(0, superInvocation);
     }
 
