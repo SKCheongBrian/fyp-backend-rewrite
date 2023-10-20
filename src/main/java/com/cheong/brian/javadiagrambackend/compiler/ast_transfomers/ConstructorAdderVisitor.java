@@ -8,7 +8,16 @@ import java.util.List;
 
 import static com.github.javaparser.ast.Modifier.Keyword.PUBLIC;
 
+/**
+ * A visitor that adds missing explicit default constructors to the AST.
+ */
 public class ConstructorAdderVisitor extends ModifierVisitor<Void> {
+    /**
+     * Visit the class declaration and adds default constructor if missing.
+     * @param declaration the class declaration.
+     * @param arg not used.
+     * @return Modified declaration containing the missing constructor.
+     */
     @Override
     public ClassOrInterfaceDeclaration visit(ClassOrInterfaceDeclaration declaration, Void arg) {
         super.visit(declaration, arg);
