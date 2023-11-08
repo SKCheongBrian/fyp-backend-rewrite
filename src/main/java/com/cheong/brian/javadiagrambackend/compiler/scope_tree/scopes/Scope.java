@@ -47,6 +47,15 @@ public abstract class Scope {
     }
 
     /**
+     * Gets the child name according to the name.
+     * @param name A SimpleName that corresponds to the name of the child scope.
+     * @return The child scope.
+     */
+    public Scope getChild(SimpleName name) {
+        return children.get(name);
+    }
+
+    /**
      * Gets the name of the scope as a string.
      * @return The string representation of the name of the scope.
      */
@@ -59,6 +68,18 @@ public abstract class Scope {
      * @return True if a class scope, false otherwise.
      */
     public abstract boolean isClassScope();
+
+    /**
+     * Returns the same Scope but with compile time type of ClassScope.
+     * @return The ClassScope.
+     */
+    public abstract ClassScope asClassScope();
+
+    /**
+     * Returns the same Scope but with compile time type of MethodScope.
+     * @return The MethodScope.
+     */
+    public abstract MethodScope asMethodScope();
 
     /**
      * Checks if the scope is a method scope.

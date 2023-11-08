@@ -25,10 +25,10 @@ import java.util.Optional;
  */
 public class ScopeTreeSkeletonMakerVisitor extends VoidVisitorAdapter<Scope> {
     /**
-     * Visits the ast and creates ClassScopes for each type.
+     * Visits the AST and creates ClassScopes for each type.
      *
-     * @param cu      the AST.
-     * @param current the ScopeTree that the ClassScopes will be a child of.
+     * @param cu      The AST.
+     * @param current The ScopeTree that the ClassScopes will be a child of.
      */
     @Override
     public void visit(CompilationUnit cu, Scope current) {
@@ -40,7 +40,7 @@ public class ScopeTreeSkeletonMakerVisitor extends VoidVisitorAdapter<Scope> {
             ClassScope classScope = new ClassScope(type.getName(), current, type.isStatic());
             current.addChild(type.getName(), classScope);
             // ok to cast because protected by guard
-            visit((ClassOrInterfaceDeclaration) type, classScope);
+            visit(type.asClassOrInterfaceDeclaration(), classScope);
         }
     }
 

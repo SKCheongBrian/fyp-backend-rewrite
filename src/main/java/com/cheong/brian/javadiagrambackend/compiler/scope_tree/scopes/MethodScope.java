@@ -6,6 +6,7 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.type.TypeParameter;
+import com.github.javaparser.utils.CodeGenerationUtils;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -22,12 +23,13 @@ public class MethodScope extends Scope {
 
     /**
      * The constructor for the MethodScope.
-     * @param name SimpleName that corresponds to the name of the method.
-     * @param parent Scope that is the parent of the method.
-     * @param isStatic A boolean that represents if the method is static.
-     * @param type The return type of the method.
+     *
+     * @param name           SimpleName that corresponds to the name of the method.
+     * @param parent         Scope that is the parent of the method.
+     * @param isStatic       A boolean that represents if the method is static.
+     * @param type           The return type of the method.
      * @param typeParameters NodeList of types of the parameters of the method.
-     * @param modifiers NodeList of the modifiers of the method.
+     * @param modifiers      NodeList of the modifiers of the method.
      */
     public MethodScope(SimpleName name, Scope parent, boolean isStatic, Type type,
                        NodeList<TypeParameter> typeParameters, NodeList<Modifier> modifiers) {
@@ -38,8 +40,20 @@ public class MethodScope extends Scope {
         this.modifiers = modifiers;
     }
 
+    @Override
+    public ClassScope asClassScope() {
+        throw new IllegalStateException(CodeGenerationUtils.f("%s is not ClassOrInterfaceDeclaration, it is %s",
+                this, this.getName(), this.isClassScope()));
+    }
+
+    @Override
+    public MethodScope asMethodScope() {
+        return this;
+    }
+
     /**
      * Adds a variable to a method scope.
+     *
      * @param variable The variable to be added.
      */
     public void addVariable(Variable variable) {
