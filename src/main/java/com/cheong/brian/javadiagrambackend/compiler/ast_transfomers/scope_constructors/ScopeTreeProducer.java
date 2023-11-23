@@ -8,12 +8,16 @@ import com.github.javaparser.ast.CompilationUnit;
  */
 public class ScopeTreeProducer {
     private final ScopeTreeSkeletonMakerVisitor scopeTreeSkeletonMakerVisitor;
+    private final PopulateScopeTreeVisitor populateScopeTreeVisitor;
+    private final SuperclassResolutionVisitor superclassResolutionVisitor;
 
     /**
      * Constructor for the ScopeTreeProducer.
      */
     public ScopeTreeProducer() {
         this.scopeTreeSkeletonMakerVisitor = new ScopeTreeSkeletonMakerVisitor();
+        this.populateScopeTreeVisitor = new PopulateScopeTreeVisitor();
+        this.superclassResolutionVisitor = new SuperclassResolutionVisitor();
     }
 
     /**
@@ -23,5 +27,7 @@ public class ScopeTreeProducer {
      */
     public void produceScopeTree(CompilationUnit ast, ScopeTree scopes) {
         this.scopeTreeSkeletonMakerVisitor.visit(ast, scopes);
+        this.populateScopeTreeVisitor.visit(ast, scopes);
+        this.superclassResolutionVisitor.visit(ast, scopes);
     }
 }

@@ -5,12 +5,8 @@ import com.cheong.brian.javadiagrambackend.compiler.scope_tree.scopes.ScopeTree;
 import com.cheong.brian.javadiagrambackend.web.json_objects.ProgramString;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.javaparser.ParseProblemException;
-import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.symbolsolver.JavaSymbolSolver;
-import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,25 +22,23 @@ public class TestController {
 
     /**
      * Tests to do whatever brian needs at the given point of time. :)
+     *
      * @param program The ProgramString from the frontend.
      * @return a String to say ok.
      * @throws JsonProcessingException If there's an issue that I don't understand yet.
      */
     @PostMapping(path = "/test")
     public ResponseEntity<String> test(@RequestBody ProgramString program) throws JsonProcessingException {
-        ParserConfiguration config = new ParserConfiguration();
-        config.setSymbolResolver(new JavaSymbolSolver(new ReflectionTypeSolver()));
-        StaticJavaParser.setConfiguration(config);
         CompilationUnit compilationUnit = StaticJavaParser.parse(program.getProgram());
-        NameExpr ne = compilationUnit.findFirst(NameExpr.class).get();
-
         ScopeTree scopes = new ScopeTree();
         astProcessor.process(compilationUnit, scopes);
+        System.out.println("test");
         return ResponseEntity.ok("ok");
     }
 
     /**
      * Supposed to handle exceptions?
+     *
      * @param ex The exception.
      * @return A String that contains the exception message.
      */

@@ -16,7 +16,7 @@ import java.util.HashMap;
  */
 @Getter
 public class MethodScope extends Scope {
-    private final HashMap<SimpleName, Variable> variables;
+    private final HashMap<String, Variable> variables;
     private final Type returnType;
     private final NodeList<TypeParameter> typeParameters;
     private final NodeList<Modifier> modifiers;
@@ -24,14 +24,14 @@ public class MethodScope extends Scope {
     /**
      * The constructor for the MethodScope.
      *
-     * @param name           SimpleName that corresponds to the name of the method.
+     * @param name           String that corresponds to the name of the method.
      * @param parent         Scope that is the parent of the method.
      * @param isStatic       A boolean that represents if the method is static.
      * @param type           The return type of the method.
      * @param typeParameters NodeList of types of the parameters of the method.
      * @param modifiers      NodeList of the modifiers of the method.
      */
-    public MethodScope(SimpleName name, Scope parent, boolean isStatic, Type type,
+    public MethodScope(String name, Scope parent, boolean isStatic, Type type,
                        NodeList<TypeParameter> typeParameters, NodeList<Modifier> modifiers) {
         super(name, parent, isStatic);
         this.variables = new HashMap<>();

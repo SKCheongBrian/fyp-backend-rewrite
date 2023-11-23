@@ -10,18 +10,18 @@ import java.util.HashMap;
  */
 @Getter
 public abstract class Scope {
-    private final HashMap<SimpleName, Scope> children;
+    private final HashMap<String, Scope> children;
     private final boolean isStatic;
-    private final SimpleName name;
+    private final String name;
     private final Scope parent;
 
     /**
      * The constructor for the Scope
-     * @param name A SimpleName that corresponds to the name of the scope.
+     * @param name A String that corresponds to the name of the scope.
      * @param parent The parents scope of this scope.
      * @param isStatic A boolean that represents if the scope is static or not.
      */
-    public Scope(SimpleName name, Scope parent, boolean isStatic) {
+    public Scope(String name, Scope parent, boolean isStatic) {
         this.name = name;
         this.children = new HashMap<>();
         this.parent = parent;
@@ -30,28 +30,28 @@ public abstract class Scope {
 
     /**
      * Add a child scope to this scope
-     * @param name A SimpleName that corresponds to the name of the child scope.
+     * @param name A String that corresponds to the name of the child scope.
      * @param child The child scope to be added.
      */
-    public void addChild(SimpleName name, Scope child) {
+    public void addChild(String name, Scope child) {
         this.children.put(name, child);
     }
 
     /**
      * Checks if a child exists in this scope.
-     * @param name SimpleName that represents the name of the child.
+     * @param name String that represents the name of the child.
      * @return True if the child exists, false otherwise.
      */
-    public boolean hasChild(SimpleName name) {
+    public boolean hasChild(String name) {
         return children.containsKey(name);
     }
 
     /**
      * Gets the child name according to the name.
-     * @param name A SimpleName that corresponds to the name of the child scope.
+     * @param name A String that corresponds to the name of the child scope.
      * @return The child scope.
      */
-    public Scope getChild(SimpleName name) {
+    public Scope getChild(String name) {
         return children.get(name);
     }
 
@@ -60,7 +60,7 @@ public abstract class Scope {
      * @return The string representation of the name of the scope.
      */
     public String getNameAsString() {
-        return this.name.asString();
+        return this.name;
     }
 
     /**

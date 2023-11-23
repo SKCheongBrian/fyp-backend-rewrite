@@ -10,10 +10,10 @@ import lombok.Getter;
 public class Field extends ScopeVariable {
     /**
      * The constructor for the field.
-     * @param name A SimpleName that corresponds to the name of the Field.
+     * @param name A String that corresponds to the name of the Field.
      * @param isStatic A boolean that represents if the field is static.
      */
-    public Field(SimpleName name, boolean isStatic) {
+    public Field(String name, boolean isStatic) {
         super(name, isStatic);
     }
 

@@ -10,7 +10,6 @@ import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
-import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.Type;
@@ -37,8 +36,9 @@ public class ScopeTreeSkeletonMakerVisitor extends VoidVisitorAdapter<Scope> {
             if (!type.isClassOrInterfaceDeclaration()) {
                 continue;
             }
-            ClassScope classScope = new ClassScope(type.getName(), current, type.isStatic());
-            current.addChild(type.getName(), classScope);
+            ClassScope classScope = new ClassScope(type.getFullyQualifiedName().orElseGet(() -> type.getNameAsString()), current,
+                    type.isStatic());
+            current.addChild(type.getFullyQualifiedName().orElseGet(() -> type.getNameAsString()), classScope);
             // ok to cast because protected by guard
             visit(type.asClassOrInterfaceDeclaration(), classScope);
         }
@@ -58,12 +58,13 @@ public class ScopeTreeSkeletonMakerVisitor extends VoidVisitorAdapter<Scope> {
         }
         List<MethodDeclaration> methods = cd.getMethods();
         for (MethodDeclaration m : methods) {
-            SimpleName name = m.getName();
+            String name = m.getName().asString();
             boolean isStatic = m.isStatic();
             Type returnType = m.getType();
             NodeList<TypeParameter> typeParameters = m.getTypeParameters();
             NodeList<Modifier> modifiers = m.getModifiers();
-            MethodScope methodScope = new MethodScope(name, current, isStatic, returnType, typeParameters, modifiers);
+            MethodScope methodScope = new MethodScope(name, current, isStatic, returnType, typeParameters,
+                    modifiers);
             current.addChild(name, methodScope);
             visit(m, methodScope);
         }
@@ -71,8 +72,11 @@ public class ScopeTreeSkeletonMakerVisitor extends VoidVisitorAdapter<Scope> {
         for (BodyDeclaration<?> member : cd.getMembers()) {
             if (member.isClassOrInterfaceDeclaration()) {
                 ClassOrInterfaceDeclaration type = (ClassOrInterfaceDeclaration) member;
-                ClassScope classScope = new ClassScope(type.getName(), current, type.isStatic());
-                current.addChild(type.getName(), classScope);
+                ClassScope classScope = new ClassScope(type.getFullyQualifiedName().orElseGet(
+                        () -> type.getNameAsString()), current,
+                        type.isStatic());
+                current.addChild(type.getFullyQualifiedName().orElseGet(
+                        () -> type.getNameAsString()), classScope);
                 visit(type, classScope);
             }
         }
@@ -94,8 +98,10 @@ public class ScopeTreeSkeletonMakerVisitor extends VoidVisitorAdapter<Scope> {
         for (Statement stmt : blockStmt.getStatements()) {
             if (stmt.isLocalClassDeclarationStmt()) {
                 ClassOrInterfaceDeclaration type = stmt.asLocalClassDeclarationStmt().getClassDeclaration();
-                ClassScope classScope = new ClassScope(type.getName(), current, type.isStatic());
-                current.addChild(type.getName(), classScope);
+                ClassScope classScope = new ClassScope(type.getFullyQualifiedName().orElseGet(() -> type.getNameAsString()),
+                        current,
+                        type.isStatic());
+                current.addChild(type.getFullyQualifiedName().orElseGet(() -> type.getNameAsString()), classScope);
                 visit(type, classScope);
             }
         }

@@ -8,15 +8,15 @@ import lombok.Getter;
  */
 @Getter
 public abstract class ScopeVariable {
-    private final SimpleName name;
+    private final String name;
     private final boolean isStatic;
 
     /**
      * The constructor for the ScopeVariable.
-     * @param name A SimpleName that corresponds to the name of the ScopeVariable.
+     * @param name A String that corresponds to the name of the ScopeVariable.
      * @param isStatic A boolean that represents if the ScopeVariable is static.
      */
-    public ScopeVariable(SimpleName name, boolean isStatic) {
+    public ScopeVariable(String name, boolean isStatic) {
         this.name = name;
         this.isStatic = isStatic;
     }

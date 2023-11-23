@@ -7,6 +7,8 @@ import com.cheong.brian.javadiagrambackend.compiler.scope_tree.scopes.ScopeTree;
 import com.github.javaparser.ast.CompilationUnit;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedList;
+
 /**
  * A facade that hides the details of the processing of the AST from the client.
  */
