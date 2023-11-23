@@ -32,7 +32,6 @@ public class TestController {
         CompilationUnit compilationUnit = StaticJavaParser.parse(program.getProgram());
         ScopeTree scopes = new ScopeTree();
         astProcessor.process(compilationUnit, scopes);
-        System.out.println("test");
         return ResponseEntity.ok("ok");
     }
 
