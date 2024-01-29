@@ -1,0 +1,27 @@
+# This program is to demonstrate the static info gathering capabilities
+
+class LOOKFORME {
+  public static int y = 1;
+  public static int x = 2;
+  public static int get() {
+    return x;
+  }
+}
+
+public class Another {
+  static int x = 3;
+    public static void main(String[] args) {
+        int x = 3;
+        int y = LOOKFORME.get();
+    }
+}
+
+# Index out of bound exception
+
+public class Test {
+    public static void main(String[] args) {
+        int[] arr = new int[10];
+        arr[10] = 3;
+    }
+}
+

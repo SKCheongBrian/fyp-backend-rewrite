@@ -3,6 +3,7 @@ package com.cheong.brian.javadiagrambackend.debugger;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.sun.jdi.*;
 import com.sun.jdi.connect.Connector;
@@ -24,22 +25,26 @@ public class Debugger {
 
     private final VirtualMachine vm;
     private final EventRequestManager eventReqMan;
+    private String className;
+    private Set<String> classNames;
     private Location lastLocation;
     private int stepCount;
     private final int stepLimit = 100;
 
-    public Debugger(String className) throws Exception {
+    public Debugger(String className, Set<String> classNames) throws Exception {
         LaunchingConnector launchingConnector = Bootstrap.virtualMachineManager().defaultConnector();
         Map<String, Connector.Argument> arguments = launchingConnector.defaultArguments();
         arguments.get("options").setValue("-cp ./sandbox/");
         arguments.get("main").setValue(className);
         arguments.get("suspend").setValue("true");
-        vm = launchingConnector.launch(arguments);
+        this.vm = launchingConnector.launch(arguments);
 
         String workingDirectory = System.getProperty("user.dir");
         System.out.println(workingDirectory);
 
-        eventReqMan = vm.eventRequestManager();
+        this.eventReqMan = vm.eventRequestManager();
+        this.className = className;
+        this.classNames = classNames;
         this.prepareAndLaunchClass(className);
     }
 
@@ -196,9 +201,9 @@ public class Debugger {
             for (StackFrame f : frames) {
                 Location loc = f.location();
                 try {
-                    stackTrace.append("\tat ").append(loc.declaringType().name().replace("org.test", ""))
+                    stackTrace.append("\tat ").append(loc.declaringType().name())
                             .append(".").append(loc.method().name())
-                            .append("(").append(loc.sourcePath().replace("org/test/", "")).append(":")
+                            .append("(").append(loc.sourcePath()).append(":")
                             .append(loc.lineNumber()).append(")\n");
                 } catch (AbsentInformationException e) {
                     e.printStackTrace();
@@ -277,6 +282,6 @@ public class Debugger {
 
     private boolean isClassInApplicationPackage(ReferenceType refType) {
         String packageName = refType.name();
-        return packageName.startsWith("org.test"); // Adjust the package name accordingly
+        return this.classNames.contains(packageName);
     }
 }
