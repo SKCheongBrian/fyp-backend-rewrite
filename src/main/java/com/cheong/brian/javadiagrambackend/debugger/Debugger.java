@@ -67,7 +67,6 @@ public class Debugger {
         }
     }
 
-
     private boolean processEvents(EventSet events) throws AbsentInformationException {
         EventIterator iter = events.eventIterator();
         boolean isRunning = true;
@@ -183,13 +182,13 @@ public class Debugger {
             String errorMessage = detailMessageValue.toString();
             String exceptionTypeString = exception.referenceType().name();
             String threadName = event.thread().name();
-            String stackTraceStart = "Exception in thread \"" + threadName + "\" " 
-                                   + exceptionTypeString + ": " + errorMessage + "\n";
+            String stackTraceStart = "Exception in thread \"" + threadName + "\" "
+                    + exceptionTypeString + ": " + errorMessage + "\n";
 
             StringBuilder stackTrace = new StringBuilder(stackTraceStart);
             List<StackFrame> frames = null;
             try {
-                 frames = event.thread().frames();
+                frames = event.thread().frames();
             } catch (IncompatibleThreadStateException e) {
                 e.printStackTrace();
             }
@@ -198,9 +197,9 @@ public class Debugger {
                 Location loc = f.location();
                 try {
                     stackTrace.append("\tat ").append(loc.declaringType().name().replace("org.test", ""))
-                        .append(".").append(loc.method().name())
-                        .append("(").append(loc.sourcePath().replace("org/test/", "")).append(":")
-                        .append(loc.lineNumber()).append(")\n");
+                            .append(".").append(loc.method().name())
+                            .append("(").append(loc.sourcePath().replace("org/test/", "")).append(":")
+                            .append(loc.lineNumber()).append(")\n");
                 } catch (AbsentInformationException e) {
                     e.printStackTrace();
                 }
@@ -208,18 +207,19 @@ public class Debugger {
 
             System.out.println(stackTrace.toString());
 
-
             return false;
         }
         return true;
     }
 
     private void printDebugInfo(Location currentLocation, StackFrame frame) {
+        System.out.println("===================================================\n");
         try {
             System.out.println("Line: " + currentLocation.lineNumber() + " - " + currentLocation.sourceName());
         } catch (AbsentInformationException e) {
             e.printStackTrace();
         }
+        printStaticInfo();
         Map<LocalVariable, Value> visibleVariables = null;
         try {
             visibleVariables = frame.getValues(frame.visibleVariables());
@@ -233,7 +233,9 @@ public class Debugger {
             if (val instanceof ObjectReference) {
                 printObjectReferenceInfo((ObjectReference) val);
             }
+            System.out.println("----------------------------------------------");
         }
+        System.out.println("===================================================\n");
     }
 
     private void printObjectReferenceInfo(ObjectReference objRef) {
@@ -245,6 +247,25 @@ public class Debugger {
                 System.out.println("    * " + field.name() + ": " + fieldValue);
             } catch (Exception e) {
                 System.err.println("    * Error getting field: '" + field.name() + "': " + e);
+            }
+        }
+    }
+
+    private void printStaticInfo() {
+        List<ReferenceType> referenceTypes = vm.allClasses();
+
+        for (ReferenceType referenceType : referenceTypes) {
+            // only want to print for user defined classes
+            if (!isClassInApplicationPackage(referenceType)) continue;
+
+            List<Field> fields = referenceType.fields();
+
+            for (Field field : fields) {
+                if (field.isStatic()) {
+                    Value value = referenceType.getValue(field);
+                    System.out.println("Static variable in " + referenceType.name() +
+                            ": " + field.name() + " = " + value);
+                }
             }
         }
     }
