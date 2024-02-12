@@ -1,9 +1,12 @@
 package com.cheong.brian.javadiagrambackend.web.controllers;
 
+import com.cheong.brian.javadiagrambackend.payload.ProgramData;
 import com.cheong.brian.javadiagrambackend.source_processor.SourceProcessor;
 import com.cheong.brian.javadiagrambackend.web.json_objects.ProgramString;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.javaparser.ParseProblemException;
+import com.google.gson.Gson;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,9 +16,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin(origins = "*")
 public class TestController {
-    // @Autowired
-    // private AstProcessor astProcessor;
-
     /**
      * Tests to do whatever brian needs at the given point of time. :)
      *
@@ -25,11 +25,11 @@ public class TestController {
      */
     @PostMapping(path = "/test")
     public ResponseEntity<String> test(@RequestBody ProgramString program) throws JsonProcessingException {
-        SourceProcessor.processProgram(program.getProgram());
-        // CompilationUnit compilationUnit = StaticJavaParser.parse(program.getProgram());
-        // ScopeTree scopes = new ScopeTree();
-        // astProcessor.process(compilationUnit, scopes);
-        return ResponseEntity.ok("ok");
+        ProgramData programData = SourceProcessor.processProgram(program.getProgram());
+        Gson gson = new Gson();
+        String json = gson.toJson(programData);
+
+        return ResponseEntity.ok(json);
     }
 
     /**

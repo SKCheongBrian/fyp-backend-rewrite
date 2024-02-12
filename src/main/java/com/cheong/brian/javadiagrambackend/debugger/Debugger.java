@@ -1,9 +1,16 @@
 package com.cheong.brian.javadiagrambackend.debugger;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.cheong.brian.javadiagrambackend.payload.ProgramData;
+import com.cheong.brian.javadiagrambackend.payload.StepInfo;
+import com.cheong.brian.javadiagrambackend.payload.memory.HeapInfo;
+import com.cheong.brian.javadiagrambackend.payload.memory.StackInfo;
+import com.cheong.brian.javadiagrambackend.payload.memory.StaticInfo;
+import com.cheong.brian.javadiagrambackend.payload.memory.StackFrameInfo;
 import com.sun.jdi.*;
 import com.sun.jdi.connect.Connector;
 import com.sun.jdi.connect.LaunchingConnector;
@@ -21,15 +28,19 @@ import com.sun.jdi.request.ExceptionRequest;
 import com.sun.jdi.request.StepRequest;
 
 public class Debugger {
-
     private final VirtualMachine vm;
     private final EventRequestManager eventReqMan;
-    private String className;
     private Set<String> classNames;
     private Location lastLocation;
     private int stepCount;
     private final int stepLimit = 100;
+    private ProgramData programData = null;
 
+    /**
+     * @param className The class name that contains the main method.
+     * @param classNames A set of all the class names in the program to be debugged.
+     * @throws Exception
+     */
     public Debugger(String className, Set<String> classNames) throws Exception {
         LaunchingConnector launchingConnector = Bootstrap.virtualMachineManager().defaultConnector();
         Map<String, Connector.Argument> arguments = launchingConnector.defaultArguments();
@@ -42,19 +53,22 @@ public class Debugger {
         System.out.println(workingDirectory);
 
         this.eventReqMan = vm.eventRequestManager();
-        this.className = className;
         this.classNames = classNames;
         this.prepareAndLaunchClass(className);
     }
 
+    /**
+     * @param className The name of the class that the vm will look out for to launch.
+     */
     private void prepareAndLaunchClass(String className) {
         ClassPrepareRequest classPrepareRequest = eventReqMan.createClassPrepareRequest();
         classPrepareRequest.addClassFilter(className);
         classPrepareRequest.enable();
     }
 
-    public void stepThroughClass() {
+    public ProgramData stepThroughClass() {
         boolean stillRunning = true;
+        this.programData = new ProgramData();
         this.stepCount = 0;
         try {
             while (stillRunning && stepCount < stepLimit) {
@@ -69,6 +83,7 @@ public class Debugger {
         if (stepCount == stepLimit) {
             System.err.println("[Error]: Maximum step count has been reached!");
         }
+        return this.programData;
     }
 
     private boolean processEvents(EventSet events) throws AbsentInformationException {
@@ -119,8 +134,10 @@ public class Debugger {
         event.request().disable();
         ThreadReference thread = event.thread();
         StackFrame frame = null;
+        List<StackFrame> frames = null;
         try {
             frame = thread.frame(0);
+            frames = thread.frames();
         } catch (IncompatibleThreadStateException e) {
             e.printStackTrace();
         }
@@ -130,6 +147,7 @@ public class Debugger {
         if (this.isUserMethod(method)) {
             this.stepCount++;
             printDebugInfo(currentLocation, frame);
+            collectProgramInfo(currentLocation, frames);
         }
         if (currentLocation.equals(this.lastLocation)) {
             System.out.println("DONE DEBUGGING!!!");
@@ -154,8 +172,10 @@ public class Debugger {
     private boolean handleStepEvent(StepEvent event) {
         event.request().disable();
         StackFrame frame = null;
+        List<StackFrame> frames = null;
         try {
             frame = event.thread().frame(0);
+            frames = event.thread().frames();
         } catch (IncompatibleThreadStateException e) {
             e.printStackTrace();
         }
@@ -164,6 +184,7 @@ public class Debugger {
         if (this.isUserMethod(method)) {
             stepCount++;
             printDebugInfo(currentLocation, frame);
+            collectProgramInfo(currentLocation, frames);
         }
 
         if (currentLocation.equals(lastLocation)) {
@@ -177,43 +198,71 @@ public class Debugger {
     }
 
     private boolean handleExceptionEvent(ExceptionEvent event) {
-        System.out.println("EVERYONE PANIC! THERE'S AN EXCEPTION!!!");
-        if (event.catchLocation() == null) {
-            ObjectReference exception = event.exception();
-            Field detailMessageField = exception.referenceType().fieldByName("detailMessage");
-            Value detailMessageValue = exception.getValue(detailMessageField);
+        if (event.catchLocation() != null) {
+            return true;
+        }
+        ObjectReference exception = event.exception();
+        Field detailMessageField = exception.referenceType().fieldByName("detailMessage");
+        Value detailMessageValue = exception.getValue(detailMessageField);
 
-            String errorMessage = detailMessageValue.toString();
-            String exceptionTypeString = exception.referenceType().name();
-            String threadName = event.thread().name();
-            String stackTraceStart = "Exception in thread \"" + threadName + "\" "
-                    + exceptionTypeString + ": " + errorMessage + "\n";
+        String errorMessage = detailMessageValue.toString();
+        String exceptionTypeString = exception.referenceType().name();
+        String threadName = event.thread().name();
+        String stackTraceStart = "Exception in thread \"" + threadName + "\" "
+                + exceptionTypeString + ": " + errorMessage + "\n";
 
-            StringBuilder stackTrace = new StringBuilder(stackTraceStart);
-            List<StackFrame> frames = null;
+        StringBuilder stackTrace = new StringBuilder(stackTraceStart);
+        List<StackFrame> frames = null;
+        try {
+            frames = event.thread().frames();
+        } catch (IncompatibleThreadStateException e) {
+            e.printStackTrace();
+        }
+
+        for (StackFrame f : frames) {
+            Location loc = f.location();
             try {
-                frames = event.thread().frames();
-            } catch (IncompatibleThreadStateException e) {
+                stackTrace.append("\tat ").append(loc.declaringType().name())
+                        .append(".").append(loc.method().name())
+                        .append("(").append(loc.sourcePath()).append(":")
+                        .append(loc.lineNumber()).append(")\n");
+            } catch (AbsentInformationException e) {
                 e.printStackTrace();
             }
-
-            for (StackFrame f : frames) {
-                Location loc = f.location();
-                try {
-                    stackTrace.append("\tat ").append(loc.declaringType().name())
-                            .append(".").append(loc.method().name())
-                            .append("(").append(loc.sourcePath()).append(":")
-                            .append(loc.lineNumber()).append(")\n");
-                } catch (AbsentInformationException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            System.out.println(stackTrace.toString());
-
-            return false;
         }
-        return true;
+
+        System.out.println(stackTrace.toString());
+
+        return false;
+    }
+
+    private void collectProgramInfo(Location currentLocation, List<StackFrame> frames) {
+        int stepNumber = this.stepCount;
+        int lineNumber = currentLocation.lineNumber();
+        StackInfo stackInfo = new StackInfo();
+        HeapInfo heapInfo = new HeapInfo();
+        StaticInfo staticInfo = new StaticInfo();
+
+        // populate stack info
+        for (int i = 0; i < frames.size(); i++) {
+            StackFrame frame = frames.get(i);
+            StackFrameInfo frameInfo = StackFrameInfo.createStackFrameInfoFromFrame(frame, i);
+            stackInfo.addFrame(frameInfo);
+        }
+
+        //populate heap info
+        for (StackFrame frame : frames) {
+           heapInfo.populate(frame);
+        }
+
+        // populate static info
+        List<ReferenceType> classes = new ArrayList<>(vm.allClasses());
+        classes.removeIf(c -> !isClassInApplicationPackage(c));
+        staticInfo.populate(classes, heapInfo);
+        
+
+        StepInfo stepInfo = new StepInfo(stepNumber, lineNumber, stackInfo, heapInfo, staticInfo);
+        this.programData.addStep(stepInfo);
     }
 
     private void printDebugInfo(Location currentLocation, StackFrame frame) {
@@ -257,7 +306,6 @@ public class Debugger {
 
     private void printStaticInfo() {
         List<ReferenceType> referenceTypes = vm.allClasses();
-
         for (ReferenceType referenceType : referenceTypes) {
             // only want to print for user defined classes
             if (!isClassInApplicationPackage(referenceType)) continue;
@@ -275,7 +323,6 @@ public class Debugger {
     }
 
     private boolean isUserMethod(Method method) {
-        System.out.println("CHECKING FOR METHOD: " + method.name());
         return isClassInApplicationPackage(method.declaringType());
     }
 

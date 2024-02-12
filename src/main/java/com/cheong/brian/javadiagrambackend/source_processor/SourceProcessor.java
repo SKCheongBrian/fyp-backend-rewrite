@@ -3,10 +3,8 @@ package com.cheong.brian.javadiagrambackend.source_processor;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -17,6 +15,7 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
 import com.cheong.brian.javadiagrambackend.debugger.Debugger;
+import com.cheong.brian.javadiagrambackend.payload.ProgramData;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
@@ -25,12 +24,12 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 
 public class SourceProcessor {
-    public static boolean processProgram(String programString) {
+    public static ProgramData processProgram(String programString) {
         StringBuilder stringBuilder = new StringBuilder();
         String mainClassName = getMainClassName(programString);
         Set<String> classNames = getClassNames(programString);
         if (mainClassName == null) {
-            return false;
+            return null;
         }
         stringBuilder.append(programString);
         programString = stringBuilder.toString();
@@ -40,8 +39,7 @@ public class SourceProcessor {
         new File(sandBoxPath).mkdirs();
         String javaSourcePath = sandBoxPath + mainClassFileName;
         writeJavaFile(javaSourcePath, programString);
-        compile(javaSourcePath, mainClassName, classNames);
-        return true;
+        return compile(javaSourcePath, mainClassName, classNames);
     }
 
     private static Set<String> getClassNames(String programString) {
@@ -56,11 +54,12 @@ public class SourceProcessor {
         return result;
     }
 
-    private static void compile(String javaSourcePath, String mainClassName, Set<String> classNames) {
+    private static ProgramData compile(String javaSourcePath, String mainClassName, Set<String> classNames) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<>();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnosticCollector, null, null);
         Iterable<? extends JavaFileObject> compilationUnit = fileManager.getJavaFileObjects(javaSourcePath);
+        ProgramData result = null;
 
         if (compiler.getTask(null, fileManager, diagnosticCollector, Arrays.asList("-g"), null, compilationUnit)
                 .call()) {
@@ -70,7 +69,7 @@ public class SourceProcessor {
             className = mainClassName;
             System.out.println("className: " + className);
             try {
-                new Debugger(className, classNames).stepThroughClass();
+                result = new Debugger(className, classNames).stepThroughClass();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -86,6 +85,7 @@ public class SourceProcessor {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return result;
     }
 
     private static void writeJavaFile(String javaSourcePath, String programString) {
