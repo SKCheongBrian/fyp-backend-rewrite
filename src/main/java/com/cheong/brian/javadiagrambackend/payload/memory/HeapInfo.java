@@ -50,7 +50,7 @@ public class HeapInfo {
     }
 
     private static ObjectVariable createObjectVariable(ObjectReference objectReference) {
-        return new ObjectVariable(objectReference.uniqueID());
+        return new ObjectVariable(objectReference.uniqueID(), objectReference.referenceType().name());
     }
 
     private static void populateObjectVariableFields(ObjectVariable objectVariable, ObjectReference objectReference) {
