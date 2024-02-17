@@ -55,6 +55,9 @@ public class HeapInfo {
 
     private static void populateObjectVariableFields(ObjectVariable objectVariable, ObjectReference objectReference) {
         for (Field field : objectReference.referenceType().allFields()) {
+            if (field.isStatic()) {
+                continue;
+            }
             Value fieldValue = objectReference.getValue(field);
             Variable fieldVariable = Variable.createVariableFromValue(field.name(), fieldValue);
             objectVariable.addField(field.name(), fieldVariable);
