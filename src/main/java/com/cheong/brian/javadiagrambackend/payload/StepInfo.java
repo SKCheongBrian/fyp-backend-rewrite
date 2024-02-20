@@ -10,12 +10,15 @@ public class StepInfo {
     private StackInfo stackInfo;
     private HeapInfo heapInfo;
     private StaticInfo staticInfo;
+    private String exceptionMessage;
 
-    public StepInfo(int stepNumber, int lineNumber, StackInfo stackInfo, HeapInfo heapInfo, StaticInfo staticInfo) {
+    public StepInfo(int stepNumber, int lineNumber, StackInfo stackInfo, HeapInfo heapInfo, StaticInfo staticInfo,
+                    String exceptionMessage) {
         this.stepNumber = stepNumber;
         this.lineNumber = lineNumber;
         this.stackInfo = stackInfo;
         this.heapInfo = heapInfo;
         this.staticInfo = staticInfo;
+        this.exceptionMessage = exceptionMessage;
     }
 }

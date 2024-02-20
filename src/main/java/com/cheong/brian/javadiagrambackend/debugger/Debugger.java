@@ -147,7 +147,7 @@ public class Debugger {
         if (this.isUserMethod(method)) {
             this.stepCount++;
             printDebugInfo(currentLocation, frame);
-            collectProgramInfo(currentLocation, frames);
+            collectProgramInfo(currentLocation, frames, null);
         }
         if (currentLocation.equals(this.lastLocation)) {
             System.out.println("DONE DEBUGGING!!!");
@@ -184,7 +184,7 @@ public class Debugger {
         if (this.isUserMethod(method)) {
             stepCount++;
             printDebugInfo(currentLocation, frame);
-            collectProgramInfo(currentLocation, frames);
+            collectProgramInfo(currentLocation, frames, null);
         }
 
         if (currentLocation.equals(lastLocation)) {
@@ -230,13 +230,14 @@ public class Debugger {
                 e.printStackTrace();
             }
         }
-
+        Location currentLocation = frames.get(0).location();
+        collectProgramInfo(currentLocation, frames, stackTrace.toString());
         System.out.println(stackTrace.toString());
 
         return false;
     }
 
-    private void collectProgramInfo(Location currentLocation, List<StackFrame> frames) {
+    private void collectProgramInfo(Location currentLocation, List<StackFrame> frames, String exceptionMessage) {
         int stepNumber = this.stepCount;
         int lineNumber = currentLocation.lineNumber();
         StackInfo stackInfo = new StackInfo();
@@ -261,7 +262,7 @@ public class Debugger {
         staticInfo.populate(classes, heapInfo);
         
 
-        StepInfo stepInfo = new StepInfo(stepNumber, lineNumber, stackInfo, heapInfo, staticInfo);
+        StepInfo stepInfo = new StepInfo(stepNumber, lineNumber, stackInfo, heapInfo, staticInfo, exceptionMessage);
         this.programData.addStep(stepInfo);
     }
 
