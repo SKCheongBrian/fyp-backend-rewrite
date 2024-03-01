@@ -6,6 +6,7 @@ import java.util.Map;
 import com.cheong.brian.javadiagrambackend.payload.variable.Variable;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.LocalVariable;
+import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.Value;
 
@@ -33,6 +34,12 @@ public class StackFrameInfo {
                 Value value = entry.getValue();
                 Variable variable = Variable.createVariableFromValue(localVariable.name(), value);
                 frameInfo.localVariables.put(localVariable.name(), variable);
+            }
+            ObjectReference thisReference = frame.thisObject();
+            if (thisReference != null) {
+                String thisString = "this";
+                Variable thisRefVar = Variable.createVariableFromValue(thisString, thisReference);
+                frameInfo.localVariables.put(thisString, thisRefVar);
             }
         } catch (AbsentInformationException e) {
             e.printStackTrace();

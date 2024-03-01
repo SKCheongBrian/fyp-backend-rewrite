@@ -22,8 +22,8 @@ class B extends A {
     this.y = y;
   }
   
-  public B compute() {
-    return this;
+  public int compute() {
+    return super.get() + this.y;
   }
 }
 

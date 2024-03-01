@@ -40,6 +40,8 @@ public class HeapInfo {
             Value value = entry.getValue();
             this.addObjectFromValue(value);
         }
+        ObjectReference thisRef = frame.thisObject();
+        this.addObjectFromValue(thisRef);
     }
 
     public void addObjectFromValue(Value value) {
