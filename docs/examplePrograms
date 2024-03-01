@@ -1,4 +1,4 @@
-# This program is to demonstrate the static info gathering capabilities
+## Demonstrate the static info gathering capabilities
 
 class LOOKFORME {
   public static int y = 1;
@@ -16,7 +16,7 @@ public class Another {
     }
 }
 
-# Index out of bound exception
+## Index out of bound exception
 
 public class Test {
     public static void main(String[] args) {
@@ -25,7 +25,7 @@ public class Test {
     }
 }
 
-# Show the stack trace for exception
+## Show the stack trace for exception
 
 public class Test {
     private static int baz() {
@@ -43,4 +43,61 @@ public class Test {
     public static void main(String[] args) {
         int x = foo();
     }
+}
+
+## nodes
+class Node {
+    private int value;
+    private Node next;
+
+    public Node(int val) {
+        this.value = val;
+        this.next = null;
+    }
+
+    public void setNext(Node other) {
+        this.next = other;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Node one = new Node(1);
+        Node two = new Node(2);
+        Node three = new Node(3);
+        one.setNext(two);
+        two.setNext(three);
+    }
+}
+
+## Variable Capture
+
+interface C {
+  void g();
+}
+
+class A {
+  int x = 1;
+
+  C f() {
+    int y = 1;
+
+    class B implements C {
+      @Override
+      public void g() {
+        x = y; // accessing x and y is OK.
+      }
+    }
+
+    B b = new B();
+    return b;
+  }
+}
+
+public class Main {
+  public static void main(String[] args) {
+    A a = new A();
+    C b = a.f();
+    b.g();
+  }
 }

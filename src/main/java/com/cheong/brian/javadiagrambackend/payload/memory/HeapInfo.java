@@ -1,6 +1,8 @@
 package com.cheong.brian.javadiagrambackend.payload.memory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.cheong.brian.javadiagrambackend.payload.variable.ObjectVariable;
@@ -54,15 +56,27 @@ public class HeapInfo {
     }
 
     private static void populateObjectVariableFields(ObjectVariable objectVariable, ObjectReference objectReference) {
+        List<Field> syntheticFields = new ArrayList<>();
         for (Field field : objectReference.referenceType().allFields()) {
             if (field.isStatic()) {
                 continue;
             }
+            if (field.isSynthetic()) {
+                syntheticFields.add(field);
+            } else {
+                Value fieldValue = objectReference.getValue(field);
+                Variable fieldVariable = Variable.createVariableFromValue(field.name(), fieldValue);
+                String name = field.name();
+                objectVariable.addField(name, fieldVariable);
+            }
+        }
+        // add synthetic fields
+        for (Field field : syntheticFields) {
             Value fieldValue = objectReference.getValue(field);
             Variable fieldVariable = Variable.createVariableFromValue(field.name(), fieldValue);
-            objectVariable.addField(field.name(), fieldVariable);
+            String name = field.name();
+            objectVariable.addSyntheticField(name, fieldVariable);
         }
-
     }
 
 }

@@ -245,7 +245,7 @@ public class Debugger {
         StaticInfo staticInfo = new StaticInfo();
 
         // populate stack info
-        for (int i = 0; i < frames.size(); i++) {
+        for (int i = frames.size() - 1; i >= 0; i--) {
             StackFrame frame = frames.get(i);
             StackFrameInfo frameInfo = StackFrameInfo.createStackFrameInfoFromFrame(frame, i);
             stackInfo.addFrame(frameInfo);
@@ -329,6 +329,6 @@ public class Debugger {
 
     private boolean isClassInApplicationPackage(ReferenceType refType) {
         String packageName = refType.name();
-        return this.classNames.contains(packageName);
+        return !packageName.contains(".");
     }
 }
