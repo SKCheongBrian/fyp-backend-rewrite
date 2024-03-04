@@ -1,9 +1,6 @@
 package com.cheong.brian.javadiagrambackend.payload.memory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.cheong.brian.javadiagrambackend.payload.variable.ObjectVariable;
 import com.cheong.brian.javadiagrambackend.payload.variable.Variable;
@@ -16,9 +13,11 @@ import com.sun.jdi.Value;
 
 public class HeapInfo {
     private Map<Long, ObjectVariable> heapObjects;
+    private Set<Long> visitedObjects;
 
     public HeapInfo() {
         this.heapObjects = new HashMap<>();
+        this.visitedObjects = new HashSet<>();
     }
 
     public void addObject(long id, ObjectVariable obj) {
@@ -26,22 +25,42 @@ public class HeapInfo {
     }
 
     public void populate(StackFrame frame) {
-        Map<LocalVariable, Value> visibleVariables = null;
         try {
-            visibleVariables = frame.getValues(frame.visibleVariables());
+            populateFromVariables(frame.getValues(frame.visibleVariables()));
         } catch (AbsentInformationException e) {
             e.printStackTrace();
         }
-
-        if (visibleVariables == null) {
-            return;
-        }
-        for (Map.Entry<LocalVariable, Value> entry : visibleVariables.entrySet()) {
-            Value value = entry.getValue();
-            this.addObjectFromValue(value);
-        }
         ObjectReference thisRef = frame.thisObject();
         this.addObjectFromValue(thisRef);
+    }
+
+    private void populateFromVariables(Map<LocalVariable, Value> variables) {
+        for (Map.Entry<LocalVariable, Value> entry : variables.entrySet()) {
+            Value value = entry.getValue();
+            if (value instanceof ObjectReference) {
+                ObjectReference objectReference = (ObjectReference) value;
+                traverseObjectGraph(objectReference);
+            }
+        }
+    }
+
+    private void traverseObjectGraph(ObjectReference objectReference) {
+        long objectId = objectReference.uniqueID();
+        if (!visitedObjects.contains(objectId)) {
+            visitedObjects.add(objectId);
+            ObjectVariable objectVariable = createObjectVariable(objectReference);
+            addObject(objectId, objectVariable);
+            populateObjectVariableFields(objectVariable, objectReference);
+
+            for (Field field : objectReference.referenceType().allFields()) {
+                if (!field.isStatic()) {
+                    Value fieldValue = objectReference.getValue(field);
+                    if (fieldValue instanceof ObjectReference) {
+                        traverseObjectGraph((ObjectReference) fieldValue);
+                    }
+                }
+            }
+        }
     }
 
     public void addObjectFromValue(Value value) {
