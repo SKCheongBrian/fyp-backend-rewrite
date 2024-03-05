@@ -1,6 +1,7 @@
 package com.cheong.brian.javadiagrambackend.debugger;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,6 +36,7 @@ public class Debugger {
     private int stepCount;
     private final int stepLimit = 100;
     private ProgramData programData = null;
+    private HashMap<Long, ObjectReference> idToObj;
 
     /**
      * @param className The class name that contains the main method.
@@ -54,6 +56,7 @@ public class Debugger {
 
         this.eventReqMan = vm.eventRequestManager();
         this.classNames = classNames;
+        this.idToObj = new HashMap<>();
         this.prepareAndLaunchClass(className);
     }
 
@@ -253,7 +256,7 @@ public class Debugger {
 
         //populate heap info
         for (StackFrame frame : frames) {
-           heapInfo.populate(frame);
+           heapInfo.populate(frame, this.idToObj);
         }
 
         // populate static info

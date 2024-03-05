@@ -1,35 +1,18 @@
 class A {
-  private int x;
+  int x;
   
   public A(int x) {
     this.x = x;
   }
   
-  public int get() {
-    return this.x;
-  }
-  
-  public void set(int x) {
-    this.x = x;
-  }
-}
-
-class B extends A {
-  private int y;
-  
-  public B(int x, int y) {
-    super(x);
-    this.y = y;
-  }
-  
-  public int compute() {
-    return super.get() + this.y;
+  int getX() {
+    return x;
   }
 }
 
 public class Main {
   public static void main(String[] args) {
-    B b = new B(1, 2);
-    b.compute();
+    A a = new A(10);
+    int z = a.getX();
   }
 }

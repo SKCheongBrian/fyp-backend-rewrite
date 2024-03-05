@@ -24,39 +24,48 @@ public class HeapInfo {
         heapObjects.put(id, obj);
     }
 
-    public void populate(StackFrame frame) {
+    public void populate(StackFrame frame, HashMap<Long, ObjectReference> idToObj) {
+        for (Long objId : idToObj.keySet()) {
+            ObjectReference objectReference = idToObj.get(objId);
+            if (!objectReference.isCollected()) {
+                traverseObjectGraph(objectReference, idToObj);
+            }
+        }
         try {
-            populateFromVariables(frame.getValues(frame.visibleVariables()));
+            populateFromVariables(frame.getValues(frame.visibleVariables()), idToObj);
         } catch (AbsentInformationException e) {
             e.printStackTrace();
         }
         ObjectReference thisRef = frame.thisObject();
-        this.addObjectFromValue(thisRef);
+        if (thisRef != null) {
+            traverseObjectGraph(thisRef, idToObj);
+        }
     }
 
-    private void populateFromVariables(Map<LocalVariable, Value> variables) {
+    private void populateFromVariables(Map<LocalVariable, Value> variables, Map<Long, ObjectReference> idToObj) {
         for (Map.Entry<LocalVariable, Value> entry : variables.entrySet()) {
             Value value = entry.getValue();
             if (value instanceof ObjectReference) {
                 ObjectReference objectReference = (ObjectReference) value;
-                traverseObjectGraph(objectReference);
+                traverseObjectGraph(objectReference, idToObj);
             }
         }
     }
 
-    private void traverseObjectGraph(ObjectReference objectReference) {
+    private void traverseObjectGraph(ObjectReference objectReference, Map<Long, ObjectReference> idToObj) {
         long objectId = objectReference.uniqueID();
         if (!visitedObjects.contains(objectId)) {
             visitedObjects.add(objectId);
             ObjectVariable objectVariable = createObjectVariable(objectReference);
             addObject(objectId, objectVariable);
+            idToObj.put(objectId, objectReference);
             populateObjectVariableFields(objectVariable, objectReference);
 
             for (Field field : objectReference.referenceType().allFields()) {
                 if (!field.isStatic()) {
                     Value fieldValue = objectReference.getValue(field);
                     if (fieldValue instanceof ObjectReference) {
-                        traverseObjectGraph((ObjectReference) fieldValue);
+                        traverseObjectGraph((ObjectReference) fieldValue, idToObj);
                     }
                 }
             }
