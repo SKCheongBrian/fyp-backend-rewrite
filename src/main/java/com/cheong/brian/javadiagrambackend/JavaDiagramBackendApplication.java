@@ -16,7 +16,7 @@ public class JavaDiagramBackendApplication {
         ProgramData programData = SourceProcessor.processProgram(userProgram);
         Gson gson = new Gson();
         String json = gson.toJson(programData);
-        File file = new File("./sandbox/content.json");
+        File file = new File("./content.json");
         try {
             PrintWriter out = new PrintWriter(file);
             out.println(json);
