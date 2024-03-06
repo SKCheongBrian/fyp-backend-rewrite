@@ -16,6 +16,7 @@ import javax.tools.ToolProvider;
 
 import com.cheong.brian.javadiagrambackend.debugger.Debugger;
 import com.cheong.brian.javadiagrambackend.payload.ProgramData;
+import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
@@ -25,36 +26,19 @@ import com.github.javaparser.ast.body.TypeDeclaration;
 
 public class SourceProcessor {
     public static ProgramData processProgram(String programString) {
-        StringBuilder stringBuilder = new StringBuilder();
         String mainClassName = getMainClassName(programString);
-        Set<String> classNames = getClassNames(programString);
         if (mainClassName == null) {
             return null;
         }
-        stringBuilder.append(programString);
-        programString = stringBuilder.toString();
-
         String sandBoxPath = "./sandbox/";
         String mainClassFileName = mainClassName + ".java";
         new File(sandBoxPath).mkdirs();
         String javaSourcePath = sandBoxPath + mainClassFileName;
         writeJavaFile(javaSourcePath, programString);
-        return compile(javaSourcePath, mainClassName, classNames);
+        return compile(javaSourcePath, mainClassName);
     }
 
-    private static Set<String> getClassNames(String programString) {
-        CompilationUnit cu = StaticJavaParser.parse(programString);
-        NodeList<TypeDeclaration<?>> types = cu.getTypes();
-
-        HashSet<String> result = new HashSet<>();
-
-        for (TypeDeclaration<?> type : types) {
-            result.add(type.getNameAsString());
-        }
-        return result;
-    }
-
-    private static ProgramData compile(String javaSourcePath, String mainClassName, Set<String> classNames) {
+    private static ProgramData compile(String javaSourcePath, String mainClassName) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<>();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnosticCollector, null, null);
@@ -64,12 +48,9 @@ public class SourceProcessor {
         if (compiler.getTask(null, fileManager, diagnosticCollector, Arrays.asList("-g"), null, compilationUnit)
                 .call()) {
             JavaFileObject j = compilationUnit.iterator().next();
-            String className = j.getName().split("[.]")[0];
-            className = className.replace("sandbox/", "");
-            className = mainClassName;
-            System.out.println("className: " + className);
+            System.out.println("className: " + mainClassName);
             try {
-                result = new Debugger(className, classNames).stepThroughClass();
+                result = new Debugger(mainClassName).stepThroughClass();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -100,7 +81,12 @@ public class SourceProcessor {
     }
 
     private static String getMainClassName(String programString) {
-        CompilationUnit cu = StaticJavaParser.parse(programString);
+        CompilationUnit cu;
+        try {
+            cu = StaticJavaParser.parse(programString);
+        } catch (ParseProblemException e) {
+            return null;
+        }
         Optional<MethodDeclaration> mainMethod = cu.findFirst(MethodDeclaration.class,
                 md -> md.getNameAsString().equals("main") && md.isPublic() && md.isStatic());
         if (mainMethod.isPresent()) {

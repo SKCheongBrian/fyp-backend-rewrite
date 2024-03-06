@@ -1,13 +1,29 @@
 package com.cheong.brian.javadiagrambackend;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import com.cheong.brian.javadiagrambackend.payload.ProgramData;
+import com.cheong.brian.javadiagrambackend.source_processor.SourceProcessor;
+import com.google.gson.Gson;
 
-@SpringBootApplication
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+
 public class JavaDiagramBackendApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(JavaDiagramBackendApplication.class, args);
+        String userProgram = args[0];
+        System.out.println(userProgram);
+        ProgramData programData = SourceProcessor.processProgram(userProgram);
+        Gson gson = new Gson();
+        String json = gson.toJson(programData);
+        File file = new File("./sandbox/content.json");
+        try {
+            PrintWriter out = new PrintWriter(file);
+            out.println(json);
+            out.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
 }

@@ -1,0 +1,1 @@
+{"stepInfos":[{"stepNumber":1,"lineNumber":1,"stackInfo":{"stackFrames":[{"methodName":"main","frameIndex":0,"localVariables":{"args":{"id":446,"name":"args"}}}]},"heapInfo":{"heapObjects":{"446":{"id":446,"className":"java.lang.String[]","fields":{},"syntheticFields":{}}},"visitedObjects":[446]},"staticInfo":{"staticVariables":{}}}]}

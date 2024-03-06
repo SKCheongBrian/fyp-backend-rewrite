@@ -11,6 +11,7 @@ class A {
 
   public A multiply(A b) {
     A a = new A(this.x * b.x, new B());
+    // Line X
     return a;
   }
 

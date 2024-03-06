@@ -31,7 +31,6 @@ import com.sun.jdi.request.StepRequest;
 public class Debugger {
     private final VirtualMachine vm;
     private final EventRequestManager eventReqMan;
-    private Set<String> classNames;
     private Location lastLocation;
     private int stepCount;
     private final int stepLimit = 100;
@@ -40,10 +39,9 @@ public class Debugger {
 
     /**
      * @param className The class name that contains the main method.
-     * @param classNames A set of all the class names in the program to be debugged.
      * @throws Exception
      */
-    public Debugger(String className, Set<String> classNames) throws Exception {
+    public Debugger(String className) throws Exception {
         LaunchingConnector launchingConnector = Bootstrap.virtualMachineManager().defaultConnector();
         Map<String, Connector.Argument> arguments = launchingConnector.defaultArguments();
         arguments.get("options").setValue("-cp ./sandbox/");
@@ -55,7 +53,6 @@ public class Debugger {
         System.out.println(workingDirectory);
 
         this.eventReqMan = vm.eventRequestManager();
-        this.classNames = classNames;
         this.idToObj = new HashMap<>();
         this.prepareAndLaunchClass(className);
     }
