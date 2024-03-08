@@ -50,7 +50,7 @@ public class Debugger {
         this.vm = launchingConnector.launch(arguments);
 
         String workingDirectory = System.getProperty("user.dir");
-        System.out.println(workingDirectory);
+//        System.out.println(workingDirectory);
 
         this.eventReqMan = vm.eventRequestManager();
         this.idToObj = new HashMap<>();
@@ -111,16 +111,16 @@ public class Debugger {
     }
 
     private boolean handleClassPrepareEvent(ClassPrepareEvent event) throws AbsentInformationException {
-        System.out.println("THERE IS A CPE!");
+//        System.out.println("THERE IS A CPE!");
         ClassType classType = (ClassType) event.referenceType();
-        System.out.println(classType.name());
+//        System.out.println(classType.name());
 
         classType.methodsByName("main").forEach(method -> {
             try {
                 List<Location> locations = method.allLineLocations();
                 Location location = locations.get(0);
                 this.lastLocation = locations.get(locations.size() - 1);
-                System.out.println("Line number: " + location.lineNumber());
+//                System.out.println("Line number: " + location.lineNumber());
                 BreakpointRequest bpReq = eventReqMan.createBreakpointRequest(location);
                 bpReq.enable();
             } catch (AbsentInformationException e) {
@@ -146,11 +146,11 @@ public class Debugger {
 
         if (this.isUserMethod(method)) {
             this.stepCount++;
-            printDebugInfo(currentLocation, frame);
+//            printDebugInfo(currentLocation, frame);
             collectProgramInfo(currentLocation, frames, null);
         }
         if (currentLocation.equals(this.lastLocation)) {
-            System.out.println("DONE DEBUGGING!!!");
+//            System.out.println("DONE DEBUGGING!!!");
             return false;
         }
 
@@ -183,12 +183,12 @@ public class Debugger {
         Method method = currentLocation.method();
         if (this.isUserMethod(method)) {
             stepCount++;
-            printDebugInfo(currentLocation, frame);
+//            printDebugInfo(currentLocation, frame);
             collectProgramInfo(currentLocation, frames, null);
         }
 
         if (currentLocation.equals(lastLocation)) {
-            System.out.println("DONE DEBUGGING!!!");
+//            System.out.println("DONE DEBUGGING!!!");
             return false;
         }
 
@@ -232,7 +232,7 @@ public class Debugger {
         }
         Location currentLocation = frames.get(0).location();
         collectProgramInfo(currentLocation, frames, stackTrace.toString());
-        System.out.println(stackTrace.toString());
+//        System.out.println(stackTrace.toString());
 
         return false;
     }
@@ -267,12 +267,12 @@ public class Debugger {
     }
 
     private void printDebugInfo(Location currentLocation, StackFrame frame) {
-        System.out.println("===================================================\n");
-        try {
-            System.out.println("Line: " + currentLocation.lineNumber() + " - " + currentLocation.sourceName());
-        } catch (AbsentInformationException e) {
-            e.printStackTrace();
-        }
+//        System.out.println("===================================================\n");
+//        try {
+////            System.out.println("Line: " + currentLocation.lineNumber() + " - " + currentLocation.sourceName());
+//        } catch (AbsentInformationException e) {
+//            e.printStackTrace();
+//        }
         printStaticInfo();
         Map<LocalVariable, Value> visibleVariables = null;
         try {
@@ -283,13 +283,13 @@ public class Debugger {
         for (Map.Entry<LocalVariable, Value> entry : visibleVariables.entrySet()) {
             LocalVariable localVariable = entry.getKey();
             Value val = entry.getValue();
-            System.out.println(localVariable + ": " + val);
+//            System.out.println(localVariable + ": " + val);
             if (val instanceof ObjectReference) {
                 printObjectReferenceInfo((ObjectReference) val);
             }
-            System.out.println("----------------------------------------------");
+//            System.out.println("----------------------------------------------");
         }
-        System.out.println("===================================================\n");
+//        System.out.println("===================================================\n");
     }
 
     private void printObjectReferenceInfo(ObjectReference objRef) {

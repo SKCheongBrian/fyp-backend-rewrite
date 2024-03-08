@@ -48,7 +48,6 @@ public class SourceProcessor {
         if (compiler.getTask(null, fileManager, diagnosticCollector, Arrays.asList("-g"), null, compilationUnit)
                 .call()) {
             JavaFileObject j = compilationUnit.iterator().next();
-            System.out.println("className: " + mainClassName);
             try {
                 result = new Debugger(mainClassName).stepThroughClass();
             } catch (Exception e) {
@@ -56,9 +55,9 @@ public class SourceProcessor {
             }
         } else {
             // Print compilation errors
-            System.out.println("Compilation errors:");
+            System.err.println("Compilation errors:");
             for (var diagnostic : diagnosticCollector.getDiagnostics()) {
-                System.out.println(diagnostic.getMessage(null));
+                System.err.println(diagnostic.getMessage(null));
             }
         }
         try {
@@ -75,7 +74,7 @@ public class SourceProcessor {
             fileWriter.write(programString);
             fileWriter.close();
         } catch (IOException e) {
-            System.out.println("An error has occurred");
+            System.err.println("An error has occurred");
             e.printStackTrace();
         }
     }

@@ -12,18 +12,18 @@ public class JavaDiagramBackendApplication {
 
     public static void main(String[] args) {
         String userProgram = args[0];
-        System.out.println(userProgram);
         ProgramData programData = SourceProcessor.processProgram(userProgram);
         Gson gson = new Gson();
         String json = gson.toJson(programData);
-        File file = new File("./content.json");
-        try {
-            PrintWriter out = new PrintWriter(file);
-            out.println(json);
-            out.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        System.out.println(json);
+//        File file = new File("./content.json");
+//        try {
+//            PrintWriter out = new PrintWriter(file);
+//            out.println(json);
+//            out.close();
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
     }
 
 }
