@@ -3,13 +3,10 @@ package com.cheong.brian.javadiagrambackend.payload.memory;
 import java.util.*;
 
 import com.cheong.brian.javadiagrambackend.payload.variable.ObjectVariable;
+import com.cheong.brian.javadiagrambackend.payload.variable.PrimitiveVariable;
 import com.cheong.brian.javadiagrambackend.payload.variable.Variable;
-import com.sun.jdi.AbsentInformationException;
-import com.sun.jdi.Field;
-import com.sun.jdi.LocalVariable;
-import com.sun.jdi.ObjectReference;
-import com.sun.jdi.StackFrame;
-import com.sun.jdi.Value;
+import com.cheong.brian.javadiagrambackend.payload.wrappers.WrapperFactory;
+import com.sun.jdi.*;
 
 public class HeapInfo {
     private Map<Long, ObjectVariable> heapObjects;
@@ -46,26 +43,62 @@ public class HeapInfo {
         for (Map.Entry<LocalVariable, Value> entry : variables.entrySet()) {
             Value value = entry.getValue();
             if (value instanceof ObjectReference) {
-                ObjectReference objectReference = (ObjectReference) value;
-                traverseObjectGraph(objectReference, idToObj);
+                WrapperFactory.create(value).accept(this, idToObj);
             }
         }
     }
 
-    private void traverseObjectGraph(ObjectReference objectReference, Map<Long, ObjectReference> idToObj) {
+    public void traverseObjectGraph(ArrayReference arrayReference, Map<Long, ObjectReference> idToObj) {
+        if ("[Ljava/lang/String;".equals(arrayReference.type().signature())) {
+            List<Value> values = arrayReference.getValues();
+            StringBuilder value = new StringBuilder();
+
+            for (Value v : values) {
+                value.append(v.toString());
+            }
+            long objectId = arrayReference.uniqueID();
+            ObjectVariable objectVariable = createObjectVariable(arrayReference);
+            addObject(objectId, objectVariable);
+            idToObj.put(objectId, arrayReference);
+            objectVariable.addField("value",
+                    new PrimitiveVariable("value", PrimitiveVariable.Type.STRING, value.toString()));
+        }
+    }
+
+    public void traverseObjectGraph(ObjectReference objectReference, Map<Long, ObjectReference> idToObj) {
         long objectId = objectReference.uniqueID();
         if (!visitedObjects.contains(objectId)) {
             visitedObjects.add(objectId);
-            ObjectVariable objectVariable = createObjectVariable(objectReference);
-            addObject(objectId, objectVariable);
-            idToObj.put(objectId, objectReference);
-            populateObjectVariableFields(objectVariable, objectReference);
+            if (objectReference.referenceType().name().equals("java.lang.String")) {
+                Field stringValueField = objectReference.referenceType().fieldByName("value");
+                if (stringValueField != null) {
+                    Value stringValue = objectReference.getValue(stringValueField);
+                    if (stringValue != null && stringValue instanceof ArrayReference) {
+                        ArrayReference stringCharArray = (ArrayReference) stringValue;
+                        StringBuilder sb = new StringBuilder();
+                        for (Value charValue : stringCharArray.getValues()) {
+                            sb.append(((PrimitiveValue) charValue).charValue());
+                        }
+                        String string = sb.toString();
+                        ObjectVariable objectVariable = createObjectVariable(objectReference);
+                        addObject(objectId, objectVariable);
+                        idToObj.put(objectId, objectReference);
+                        objectVariable.addField("value", new PrimitiveVariable("value",
+                                PrimitiveVariable.Type.STRING, string));
+                    }
+                }
+            } else {
+                ObjectVariable objectVariable = createObjectVariable(objectReference);
+                addObject(objectId, objectVariable);
+                idToObj.put(objectId, objectReference);
+                populateObjectVariableFields(objectVariable, objectReference);
 
-            for (Field field : objectReference.referenceType().allFields()) {
-                if (!field.isStatic()) {
-                    Value fieldValue = objectReference.getValue(field);
-                    if (fieldValue instanceof ObjectReference) {
-                        traverseObjectGraph((ObjectReference) fieldValue, idToObj);
+                for (Field field : objectReference.referenceType().allFields()) {
+                    if (!field.isStatic()) {
+                        Value fieldValue = objectReference.getValue(field);
+                        if (fieldValue instanceof ObjectReference) {
+                            WrapperFactory.create(fieldValue).accept(this, idToObj);
+                        }
                     }
                 }
             }

@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
@@ -19,16 +17,15 @@ import com.cheong.brian.javadiagrambackend.payload.ProgramData;
 import com.github.javaparser.ParseProblemException;
 import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.TypeDeclaration;
 
 public class SourceProcessor {
     public static ProgramData processProgram(String programString) {
         String mainClassName = getMainClassName(programString);
         if (mainClassName == null) {
-            return null;
+            String errorMessage = "Please ensure that your class has a main method.";
+            return ProgramData.failure(errorMessage);
         }
         String sandBoxPath = "./sandbox/";
         String mainClassFileName = mainClassName + ".java";
@@ -56,9 +53,12 @@ public class SourceProcessor {
         } else {
             // Print compilation errors
             System.err.println("Compilation errors:");
+            StringBuilder errorBuilder = new StringBuilder("Compilation errors:");
             for (var diagnostic : diagnosticCollector.getDiagnostics()) {
                 System.err.println(diagnostic.getMessage(null));
+                errorBuilder.append(diagnostic.getMessage(null));
             }
+            return ProgramData.failure(errorBuilder.toString());
         }
         try {
             fileManager.close();

@@ -124,3 +124,23 @@ public class Main {
     int z = a.getX();
   }
 }
+
+# Static field
+
+class Passenger {
+    private static int nextId = 1;
+    private final int id;
+
+    public Passenger() {
+        this.id = ++nextId;
+    }
+}
+
+
+class Main {
+  public static void main(String[] args) {
+    Passenger p1 = new Passenger();
+    Passenger p2 = new Passenger();
+    Passenger p3 = new Passenger();
+  }
+}

@@ -17,9 +17,7 @@ import com.sun.jdi.connect.Connector;
 import com.sun.jdi.connect.LaunchingConnector;
 import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.ClassPrepareEvent;
-import com.sun.jdi.event.Event;
-import com.sun.jdi.event.EventIterator;
-import com.sun.jdi.event.EventSet;
+import com.sun.jdi.event.Event; import com.sun.jdi.event.EventIterator; import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.ExceptionEvent;
 import com.sun.jdi.event.StepEvent;
 import com.sun.jdi.request.BreakpointRequest;
@@ -68,7 +66,7 @@ public class Debugger {
 
     public ProgramData stepThroughClass() {
         boolean stillRunning = true;
-        this.programData = new ProgramData();
+        this.programData = ProgramData.success();
         this.stepCount = 0;
         try {
             while (stillRunning && stepCount < stepLimit) {
@@ -146,11 +144,9 @@ public class Debugger {
 
         if (this.isUserMethod(method)) {
             this.stepCount++;
-//            printDebugInfo(currentLocation, frame);
             collectProgramInfo(currentLocation, frames, null);
         }
         if (currentLocation.equals(this.lastLocation)) {
-//            System.out.println("DONE DEBUGGING!!!");
             return false;
         }
 
@@ -183,12 +179,10 @@ public class Debugger {
         Method method = currentLocation.method();
         if (this.isUserMethod(method)) {
             stepCount++;
-//            printDebugInfo(currentLocation, frame);
             collectProgramInfo(currentLocation, frames, null);
         }
 
         if (currentLocation.equals(lastLocation)) {
-//            System.out.println("DONE DEBUGGING!!!");
             return false;
         }
 
@@ -232,7 +226,6 @@ public class Debugger {
         }
         Location currentLocation = frames.get(0).location();
         collectProgramInfo(currentLocation, frames, stackTrace.toString());
-//        System.out.println(stackTrace.toString());
 
         return false;
     }
@@ -267,12 +260,6 @@ public class Debugger {
     }
 
     private void printDebugInfo(Location currentLocation, StackFrame frame) {
-//        System.out.println("===================================================\n");
-//        try {
-////            System.out.println("Line: " + currentLocation.lineNumber() + " - " + currentLocation.sourceName());
-//        } catch (AbsentInformationException e) {
-//            e.printStackTrace();
-//        }
         printStaticInfo();
         Map<LocalVariable, Value> visibleVariables = null;
         try {
@@ -283,13 +270,10 @@ public class Debugger {
         for (Map.Entry<LocalVariable, Value> entry : visibleVariables.entrySet()) {
             LocalVariable localVariable = entry.getKey();
             Value val = entry.getValue();
-//            System.out.println(localVariable + ": " + val);
             if (val instanceof ObjectReference) {
                 printObjectReferenceInfo((ObjectReference) val);
             }
-//            System.out.println("----------------------------------------------");
         }
-//        System.out.println("===================================================\n");
     }
 
     private void printObjectReferenceInfo(ObjectReference objRef) {

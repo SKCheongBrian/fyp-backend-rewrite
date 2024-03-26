@@ -10,6 +10,7 @@ public class PrimitiveVariable extends Variable {
         DOUBLE,
         BOOLEAN,
         CHAR,
+        STRING,
         UNKNOWN
     }
 
