@@ -62,6 +62,44 @@ public class HeapInfo {
             idToObj.put(objectId, arrayReference);
             objectVariable.addField("value",
                     new PrimitiveVariable("value", PrimitiveVariable.Type.STRING, value.toString()));
+        } else {
+            long objectId = arrayReference.uniqueID();
+            if (!visitedObjects.contains(objectId)) {
+                visitedObjects.add(objectId);
+                if (arrayReference.referenceType().name().equals("java.lang.String")) {
+                    Field stringValueField = arrayReference.referenceType().fieldByName("value");
+                    if (stringValueField != null) {
+                        Value stringValue = arrayReference.getValue(stringValueField);
+                        if (stringValue != null && stringValue instanceof ArrayReference) {
+                            ArrayReference stringCharArray = (ArrayReference) stringValue;
+                            StringBuilder sb = new StringBuilder();
+                            for (Value charValue : stringCharArray.getValues()) {
+                                sb.append(((PrimitiveValue) charValue).charValue());
+                            }
+                            String string = sb.toString();
+                            ObjectVariable objectVariable = createObjectVariable(arrayReference);
+                            addObject(objectId, objectVariable);
+                            idToObj.put(objectId, arrayReference);
+                            objectVariable.addField("value", new PrimitiveVariable("value",
+                                    PrimitiveVariable.Type.STRING, string));
+                        }
+                    }
+                } else {
+                    ObjectVariable objectVariable = createObjectVariable(arrayReference);
+                    addObject(objectId, objectVariable);
+                    idToObj.put(objectId, arrayReference);
+                    populateObjectVariableFields(objectVariable, arrayReference);
+
+                    for (Field field : arrayReference.referenceType().allFields()) {
+                        if (!field.isStatic()) {
+                            Value fieldValue = arrayReference.getValue(field);
+                            if (fieldValue instanceof ObjectReference) {
+                                WrapperFactory.create(fieldValue).accept(this, idToObj);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
