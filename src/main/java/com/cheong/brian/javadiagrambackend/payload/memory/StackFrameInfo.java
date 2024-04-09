@@ -1,6 +1,8 @@
 package com.cheong.brian.javadiagrambackend.payload.memory;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import com.cheong.brian.javadiagrambackend.payload.variable.Variable;
@@ -13,12 +15,13 @@ import com.sun.jdi.Value;
 public class StackFrameInfo {
     private String methodName;
     private int frameIndex;
-    private Map<String, Variable> localVariables;
+    // private Map<String, Variable> localVariables;
+    private List<Variable> localVariables;
 
     private StackFrameInfo(String methodName, int frameIndex) {
         this.methodName = methodName;
         this.frameIndex = frameIndex;
-        this.localVariables = new HashMap<>();
+        this.localVariables = new ArrayList<>();
     }
 
     public static StackFrameInfo createStackFrameInfoFromFrame(StackFrame frame, int index) {
@@ -26,20 +29,21 @@ public class StackFrameInfo {
 
         StackFrameInfo frameInfo = new StackFrameInfo(methodName, index);
 
-        Map<LocalVariable, Value> visibleVariables;
+        List<LocalVariable> visibleVariables;
+
         try {
-            visibleVariables = frame.getValues(frame.visibleVariables());
-            for (Map.Entry<LocalVariable, Value> entry : visibleVariables.entrySet()) {
-                LocalVariable localVariable = entry.getKey();
-                Value value = entry.getValue();
+            visibleVariables = frame.visibleVariables();
+            for (LocalVariable localVariable : visibleVariables) {
+                Value value = frame.getValue(localVariable);
                 Variable variable = Variable.createVariableFromValue(localVariable.name(), value);
-                frameInfo.localVariables.put(localVariable.name(), variable);
+                frameInfo.localVariables.add(variable);
             }
+            Collections.reverse(frameInfo.localVariables);
             ObjectReference thisReference = frame.thisObject();
             if (thisReference != null) {
                 String thisString = "this";
                 Variable thisRefVar = Variable.createVariableFromValue(thisString, thisReference);
-                frameInfo.localVariables.put(thisString, thisRefVar);
+                frameInfo.localVariables.add(thisRefVar);
             }
         } catch (AbsentInformationException e) {
             e.printStackTrace();

@@ -48,6 +48,7 @@ public class HeapInfo {
         }
     }
 
+    // TODO To be fixed when implementing arrays properly
     public void traverseObjectGraph(ArrayReference arrayReference, Map<Long, ObjectReference> idToObj) {
         if ("[Ljava/lang/String;".equals(arrayReference.type().signature())) {
             List<Value> values = arrayReference.getValues();
